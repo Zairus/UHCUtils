@@ -1,0 +1,16 @@
+[
+{
+  "modid": "uhcutils",
+  "name": "UHCUtils",
+  "description": "Modded UHC Utilities",
+  "version": "0.0.1-alpha",
+  "mcversion": "1.10.2",
+  "url": "",
+  "updateUrl": "",
+  "authorList": ["Winter_Grave"],
+  "credits": "",
+  "logoFile": "",
+  "screenshots": [],
+  "dependencies": []
+}
+]

@@ -1,0 +1,6 @@
+{
+	"parent": "block/cube_all",
+	"textures": {
+		"all": "uhcutils:blocks/uhccontroller_pink"
+	}
+}

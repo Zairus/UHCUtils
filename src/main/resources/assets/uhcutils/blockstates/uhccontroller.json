@@ -1,0 +1,21 @@
+{
+	"variants": {
+		"group=white": {"model": "uhcutils:uhccontroller_white"},
+		"group=orange": {"model": "uhcutils:uhccontroller_orange"},
+		"group=magenta": {"model": "uhcutils:uhccontroller_magenta"},
+		"group=lightblue": {"model": "uhcutils:uhccontroller_lightblue"},
+		"group=yellow": {"model": "uhcutils:uhccontroller_yellow"},
+		"group=lime": {"model": "uhcutils:uhccontroller_lime"},
+		"group=pink": {"model": "uhcutils:uhccontroller_pink"},
+		"group=gray": {"model": "uhcutils:uhccontroller_gray"},
+		"group=lightgray": {"model": "uhcutils:uhccontroller_lightgray"},
+		"group=cyan": {"model": "uhcutils:uhccontroller_cyan"},
+		"group=purple": {"model": "uhcutils:uhccontroller_purple"},
+		"group=blue": {"model": "uhcutils:uhccontroller_blue"},
+		"group=brown": {"model": "uhcutils:uhccontroller_brown"},
+		"group=green": {"model": "uhcutils:uhccontroller_green"},
+		"group=red": {"model": "uhcutils:uhccontroller_red"},
+		"group=black": {"model": "uhcutils:uhccontroller_black"},
+		"group=main": {"model": "uhcutils:uhccontroller_main"}
+	}
+}
