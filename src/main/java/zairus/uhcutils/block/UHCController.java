@@ -2,16 +2,14 @@ package zairus.uhcutils.block;
 
 import net.minecraft.block.Block;
 import net.minecraft.block.ITileEntityProvider;
-import net.minecraft.block.SoundType;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.properties.IProperty;
 import net.minecraft.block.properties.PropertyEnum;
-import net.minecraft.block.state.BlockStateContainer;
+import net.minecraft.block.state.BlockState;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.EnumBlockRenderType;
+import net.minecraft.util.BlockPos;
 import net.minecraft.util.IStringSerializable;
-import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
 import zairus.uhcutils.UHCUtils;
@@ -23,8 +21,8 @@ public class UHCController extends Block implements ITileEntityProvider
 	
 	public UHCController()
 	{
-		super(Material.ROCK);
-		this.setSoundType(SoundType.GLASS);
+		super(Material.rock);
+		this.setStepSound(Block.soundTypeGlass);
 		this.setCreativeTab(UHCUtils.tabUHC);
 		this.setBlockUnbreakable();
 		this.setResistance(6000000.0F);
@@ -33,9 +31,9 @@ public class UHCController extends Block implements ITileEntityProvider
 	}
 	
 	@Override
-	public EnumBlockRenderType getRenderType(IBlockState state)
+	public int getRenderType()
 	{
-		return EnumBlockRenderType.MODEL;
+		return 3;
 	}
 	
 	@Override
@@ -63,9 +61,9 @@ public class UHCController extends Block implements ITileEntityProvider
 	}
 	
 	@Override
-	protected BlockStateContainer createBlockState()
+	protected BlockState createBlockState()
 	{
-		return new BlockStateContainer(this, new IProperty[] {GROUP});
+		return new BlockState(this, new IProperty[] {GROUP});
 	}
 	
 	@Override
