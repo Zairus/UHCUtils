@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Random;
 import java.util.UUID;
 
+import net.minecraft.block.state.IBlockState;
 import net.minecraft.command.CommandResultStats.Type;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.Entity;
@@ -15,19 +16,16 @@ import net.minecraft.init.Items;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
-import net.minecraft.network.NetworkManager;
-import net.minecraft.network.Packet;
-import net.minecraft.network.play.INetHandlerPlayClient;
-import net.minecraft.network.play.server.S35PacketUpdateTileEntity;
+import net.minecraft.network.play.server.SPacketUpdateTileEntity;
 import net.minecraft.scoreboard.ScorePlayerTeam;
 import net.minecraft.scoreboard.Team;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.BlockPos;
-import net.minecraft.util.IChatComponent;
 import net.minecraft.util.ITickable;
-import net.minecraft.util.MathHelper;
-import net.minecraft.util.Vec3;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.MathHelper;
+import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.text.ITextComponent;
 import net.minecraft.world.World;
 import zairus.uhcutils.UHCUtils;
 import zairus.uhcutils.block.UUBlocks;
@@ -48,6 +46,8 @@ public class TileEntityUHCController extends TileEntity implements ITickable, IC
 	private int redstoneSeconds = 0;
 	private int redstoneCountdown = 0;
 	private int redstoneCountdownSeconds = 0;
+	
+	private int updateSeconds = 0;
 	
 	public boolean redstoneOn = false;
 	
@@ -75,10 +75,10 @@ public class TileEntityUHCController extends TileEntity implements ITickable, IC
 		if (!this.worldObj.isRemote)
 			checkAndAddToList();
 		
+		++internalTime;
+		
 		if (group == 0)
 		{
-			++internalTime;
-			
 			if (!started && this.taskFlags[0])
 			{
 				if (countdown <= 0 && getEllapsedSeconds() - countdownSeconds > 1)
@@ -140,6 +140,12 @@ public class TileEntityUHCController extends TileEntity implements ITickable, IC
 				}
 			}
 		}
+		
+		if (getEllapsedSeconds() - updateSeconds > 5)
+		{
+			updateSeconds = getEllapsedSeconds();
+			updateMe();
+		}
 	}
 	
 	private void executeRedstone(boolean active)
@@ -154,8 +160,8 @@ public class TileEntityUHCController extends TileEntity implements ITickable, IC
 				TileEntityUHCController controllerTE = (TileEntityUHCController)te;
 				controllerTE.redstoneOn = active;
 				
-				this.worldObj.markBlockForUpdate(controllerTE.getPos());
-				this.worldObj.notifyNeighborsOfStateChange(controllerTE.getPos(), Blocks.redstone_wire);
+				this.markDirty();
+				this.worldObj.notifyNeighborsOfStateChange(controllerTE.getPos(), Blocks.REDSTONE_WIRE);
 			}
 		}
 	}
@@ -164,7 +170,7 @@ public class TileEntityUHCController extends TileEntity implements ITickable, IC
 	{
 		List<EntityPlayer> players = this.worldObj.playerEntities;
 		
-		ItemStack stack = new ItemStack(Items.fireworks);
+		ItemStack stack = new ItemStack(Items.FIREWORKS);
 		
 		for (EntityPlayer player : players)
 		{
@@ -266,7 +272,7 @@ public class TileEntityUHCController extends TileEntity implements ITickable, IC
 	
 	private void executeCommand(String command)
 	{
-		MinecraftServer.getServer().getCommandManager().executeCommand(this, command);
+		this.worldObj.getMinecraftServer().getCommandManager().executeCommand(this, command);
 	}
 	
 	public int getEllapsedSeconds()
@@ -336,6 +342,7 @@ public class TileEntityUHCController extends TileEntity implements ITickable, IC
 	
 	public int getGroup()
 	{
+		updateMe();
 		return this.group;
 	}
 	
@@ -404,7 +411,7 @@ public class TileEntityUHCController extends TileEntity implements ITickable, IC
 	}
 	
 	@Override
-	public void writeToNBT(NBTTagCompound compound)
+	public NBTTagCompound writeToNBT(NBTTagCompound compound)
 	{
 		super.writeToNBT(compound);
 		compound.setInteger("group", this.group);
@@ -416,18 +423,20 @@ public class TileEntityUHCController extends TileEntity implements ITickable, IC
 		
 		if (this.group == 0)
 			compound.setTag("controllerList", GlobalData.instance.controllerList);
+		
+		return compound;
 	}
 	
 	@Override
-	public Packet<INetHandlerPlayClient> getDescriptionPacket()
+	public SPacketUpdateTileEntity getUpdatePacket()
 	{
 		NBTTagCompound syncData = new NBTTagCompound();
 		writeSyncableDataToNBT(syncData);
-		return new S35PacketUpdateTileEntity(this.getPos(), 1, syncData);
+		return new SPacketUpdateTileEntity(this.getPos(), 1, syncData);
 	}
 	
 	@Override
-	public void onDataPacket(NetworkManager net, S35PacketUpdateTileEntity pkt)
+	public void onDataPacket(net.minecraft.network.NetworkManager net, net.minecraft.network.play.server.SPacketUpdateTileEntity pkt)
 	{
 		readSyncableDataFromNBT(pkt.getNbtCompound());
 	}
@@ -447,7 +456,12 @@ public class TileEntityUHCController extends TileEntity implements ITickable, IC
 	
 	private void updateMe()
 	{
-		this.worldObj.markBlockForUpdate(this.getPos());
+		this.markDirty();
+		this.worldObj.markBlockRangeForRenderUpdate(getPos().add(-1, -1, -1), getPos().add(1, 1, 1));
+		
+		IBlockState state = this.worldObj.getBlockState(getPos());
+		
+		this.worldObj.notifyBlockUpdate(getPos(), state, state, 0);
 	}
 	
 	@Override
@@ -457,14 +471,9 @@ public class TileEntityUHCController extends TileEntity implements ITickable, IC
 	}
 	
 	@Override
-	public IChatComponent getDisplayName()
+	public ITextComponent getDisplayName()
 	{
 		return null;
-	}
-	
-	@Override
-	public void addChatMessage(IChatComponent component)
-	{
 	}
 	
 	@Override
@@ -477,12 +486,6 @@ public class TileEntityUHCController extends TileEntity implements ITickable, IC
 	public BlockPos getPosition()
 	{
 		return getPos();
-	}
-	
-	@Override
-	public Vec3 getPositionVector()
-	{
-		return new Vec3(getPos().getX(), getPos().getY(), getPos().getZ());
 	}
 	
 	@Override
@@ -506,5 +509,22 @@ public class TileEntityUHCController extends TileEntity implements ITickable, IC
 	@Override
 	public void setCommandStat(Type type, int amount)
 	{
+	}
+	
+	@Override
+	public void addChatMessage(ITextComponent component)
+	{
+	}
+	
+	@Override
+	public Vec3d getPositionVector()
+	{
+		return new Vec3d(this.pos.getX(), this.pos.getY(), this.pos.getZ());
+	}
+	
+	@Override
+	public MinecraftServer getServer()
+	{
+		return this.worldObj.getMinecraftServer();
 	}
 }

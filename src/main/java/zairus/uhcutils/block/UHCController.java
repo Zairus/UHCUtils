@@ -1,17 +1,23 @@
 package zairus.uhcutils.block;
 
+import javax.annotation.Nullable;
+
 import net.minecraft.block.Block;
 import net.minecraft.block.ITileEntityProvider;
+import net.minecraft.block.SoundType;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.properties.IProperty;
 import net.minecraft.block.properties.PropertyEnum;
-import net.minecraft.block.state.BlockState;
+import net.minecraft.block.state.BlockStateContainer;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.BlockPos;
+import net.minecraft.util.EnumBlockRenderType;
 import net.minecraft.util.EnumFacing;
-import net.minecraft.util.MathHelper;
+import net.minecraft.util.EnumHand;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
 import zairus.uhcutils.UHCUtils;
@@ -25,8 +31,8 @@ public class UHCController extends Block implements ITileEntityProvider
 	
 	public UHCController()
 	{
-		super(Material.rock);
-		this.setStepSound(Block.soundTypeGlass);
+		super(Material.ROCK);
+		this.setSoundType(SoundType.GLASS);
 		this.setCreativeTab(UHCUtils.tabUHC);
 		this.setBlockUnbreakable();
 		this.setResistance(6000000.0F);
@@ -34,9 +40,9 @@ public class UHCController extends Block implements ITileEntityProvider
 	}
 	
 	@Override
-	public int getRenderType()
+	public EnumBlockRenderType getRenderType(IBlockState state)
 	{
-		return 3;
+		return EnumBlockRenderType.MODEL;
 	}
 	
 	@Override
@@ -79,9 +85,9 @@ public class UHCController extends Block implements ITileEntityProvider
 	}
 	
 	@Override
-	protected BlockState createBlockState()
+	protected BlockStateContainer createBlockState()
 	{
-		return new BlockState(this, new IProperty[] {GROUP});
+		return new BlockStateContainer(this, new IProperty[] {GROUP});
 	}
 	
 	@Override
@@ -100,7 +106,7 @@ public class UHCController extends Block implements ITileEntityProvider
 	}
 	
 	@Override
-	public boolean onBlockActivated(World world, BlockPos pos, IBlockState state, EntityPlayer player, EnumFacing side, float hitX, float hitY, float hitZ)
+	public boolean onBlockActivated(World world, BlockPos pos, IBlockState state, EntityPlayer player, EnumHand hand, @Nullable ItemStack heldItem, EnumFacing side, float hitX, float hitY, float hitZ)
 	{
 		if (world.isRemote && player.capabilities.isCreativeMode)
 		{
@@ -111,13 +117,13 @@ public class UHCController extends Block implements ITileEntityProvider
 	}
 	
 	@Override
-	public boolean canProvidePower()
+	public boolean canProvidePower(IBlockState state)
 	{
 		return true;
 	}
 	
 	@Override
-	public int getWeakPower(IBlockAccess world, BlockPos pos, IBlockState state, EnumFacing side)
+	public int getWeakPower(IBlockState blockState, IBlockAccess world, BlockPos pos, EnumFacing side)
 	{
 		int power = 0;
 		TileEntity te = world.getTileEntity(pos);
