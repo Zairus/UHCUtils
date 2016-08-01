@@ -7,13 +7,17 @@ import net.minecraft.block.properties.IProperty;
 import net.minecraft.block.properties.PropertyEnum;
 import net.minecraft.block.state.BlockState;
 import net.minecraft.block.state.IBlockState;
+import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.BlockPos;
-import net.minecraft.util.IStringSerializable;
+import net.minecraft.util.EnumFacing;
+import net.minecraft.util.MathHelper;
 import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
 import zairus.uhcutils.UHCUtils;
+import zairus.uhcutils.gui.GuiHandler;
 import zairus.uhcutils.tileentity.TileEntityUHCController;
+import zairus.uhcutils.util.EnumUHCGroups;
 
 public class UHCController extends Block implements ITileEntityProvider
 {
@@ -26,7 +30,6 @@ public class UHCController extends Block implements ITileEntityProvider
 		this.setCreativeTab(UHCUtils.tabUHC);
 		this.setBlockUnbreakable();
 		this.setResistance(6000000.0F);
-		this.setHardness(1.9F);
 		this.setDefaultState(this.blockState.getBaseState().withProperty(GROUP, EnumUHCGroups.MAIN));
 	}
 	
@@ -37,9 +40,24 @@ public class UHCController extends Block implements ITileEntityProvider
 	}
 	
 	@Override
-	public TileEntity createNewTileEntity(World worldIn, int meta)
+	public TileEntity createNewTileEntity(World world, int meta)
 	{
-		return new TileEntityUHCController();
+		return new TileEntityUHCController().setUID(MathHelper.getRandomUuid(world.rand));
+	}
+	
+	@Override
+	public void breakBlock(World world, BlockPos pos, IBlockState state)
+	{
+		if (!world.isRemote)
+		{
+			TileEntity te = world.getTileEntity(pos);
+			if (te instanceof TileEntityUHCController)
+			{
+				((TileEntityUHCController)te).removeFromList();
+			}
+		}
+		
+		super.breakBlock(world, pos, state);
 	}
 	
 	@Override
@@ -81,89 +99,40 @@ public class UHCController extends Block implements ITileEntityProvider
 		return state.withProperty(GROUP, group);
 	}
 	
-	public enum EnumUHCGroups implements IStringSerializable
+	@Override
+	public boolean onBlockActivated(World world, BlockPos pos, IBlockState state, EntityPlayer player, EnumFacing side, float hitX, float hitY, float hitZ)
 	{
-		MAIN("main", 0),
-		WHITE("white", 1),
-		ORANGE("orange", 2),
-		MAGENTA("magenta", 3),
-		LIGHTBLUE("lightblue", 4),
-		YELLOW("yellow", 5),
-		LIME("lime", 6),
-		PINK("pink", 7),
-		GRAY("gray", 8),
-		LIGHTGRAY("lightgray", 9),
-		CYAN("cyan", 10),
-		PURPLE("purple", 11),
-		BLUE("blue", 12),
-		BROWN("brown", 13),
-		GREEN("green", 14),
-		RED("red", 15),
-		BLACK("black", 16);
-		
-		private String name;
-		private int index;
-		
-		private EnumUHCGroups(String name, int index)
+		if (world.isRemote && player.capabilities.isCreativeMode)
 		{
-			this.name = name;
-			this.index = index;
+			player.openGui(UHCUtils.instance, GuiHandler.GUI_UHCCONTROLLER_ID, world, pos.getX(), pos.getY(), pos.getZ());
 		}
 		
-		public static EnumUHCGroups fromMeta(int meta)
+		return true;
+	}
+	
+	@Override
+	public boolean canProvidePower()
+	{
+		return true;
+	}
+	
+	@Override
+	public int getWeakPower(IBlockAccess world, BlockPos pos, IBlockState state, EnumFacing side)
+	{
+		int power = 0;
+		TileEntity te = world.getTileEntity(pos);
+		
+		if (te instanceof TileEntityUHCController)
 		{
-			switch(meta)
-			{
-			case 1:
-				return WHITE;
-			case 2:
-				return ORANGE;
-			case 3:
-				return MAGENTA;
-			case 4:
-				return LIGHTBLUE;
-			case 5:
-				return YELLOW;
-			case 6:
-				return LIME;
-			case 8:
-				return PINK;
-			case 9:
-				return GRAY;
-			case 10:
-				return LIGHTGRAY;
-			case 11:
-				return CYAN;
-			case 12:
-				return PURPLE;
-			case 13:
-				return BROWN;
-			case 14:
-				return GREEN;
-			case 15:
-				return RED;
-			case 16:
-				return BLACK;
-			default:
-				return MAIN;
-			}
+			TileEntityUHCController cont = (TileEntityUHCController)te;
+			EnumUHCGroups g = EnumUHCGroups.fromMeta(cont.getGroup());
+			
+			if (g.getIndex() == 17 && cont.redstoneOn)
+				power = 15;
+			else
+				power = 0;
 		}
 		
-		public int getIndex()
-		{
-			return this.index;
-		}
-		
-		@Override
-		public String getName()
-		{
-			return this.name;
-		}
-		
-		@Override
-		public String toString()
-		{
-			return this.name;
-		}
+		return power;
 	}
 }

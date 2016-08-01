@@ -16,6 +16,7 @@
 		"group=green": {"model": "uhcutils:uhccontroller_green"},
 		"group=red": {"model": "uhcutils:uhccontroller_red"},
 		"group=black": {"model": "uhcutils:uhccontroller_black"},
-		"group=main": {"model": "uhcutils:uhccontroller_main"}
+		"group=main": {"model": "uhcutils:uhccontroller_main"},
+		"group=redstone": {"model": "uhcutils:uhccontroller_redstone"}
 	}
 }
