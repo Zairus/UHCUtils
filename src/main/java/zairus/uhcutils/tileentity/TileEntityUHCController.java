@@ -272,7 +272,10 @@ public class TileEntityUHCController extends TileEntity implements ITickable, IC
 	
 	private void executeCommand(String command)
 	{
-		this.worldObj.getMinecraftServer().getCommandManager().executeCommand(this, command);
+		if (this.worldObj != null)
+			if (this.worldObj.getMinecraftServer() != null)
+				if (this.worldObj.getMinecraftServer().getCommandManager() != null)
+					this.worldObj.getMinecraftServer().getCommandManager().executeCommand(this, command);
 	}
 	
 	public int getEllapsedSeconds()

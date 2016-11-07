@@ -14,7 +14,7 @@ buildscript {
 }
 apply plugin: 'net.minecraftforge.gradle.forge'
 
-version = "0.0.2-alpha"
+version = "1.0.2"
 group= "zairus.uhcutils"
 archivesBaseName = "uhcutils-1.10.2"
 
