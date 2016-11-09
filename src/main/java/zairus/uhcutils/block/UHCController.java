@@ -81,7 +81,7 @@ public class UHCController extends Block implements ITileEntityProvider
 	@Override
 	public int getMetaFromState(IBlockState state)
 	{
-		return state.getValue(GROUP).getIndex();
+		return MathHelper.clamp_int(state.getValue(GROUP).getIndex(), 0, 15);
 	}
 	
 	@Override
